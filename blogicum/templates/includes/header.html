@@ -20,18 +20,29 @@
           </li>
           {% if user.is_authenticated %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'blog:create_post' %}">Написать пост</a></button>
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'blog:profile' user.username %}">{{ user.username }}</a></button>
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'logout' %}">Выйти</a></button>
+              <button type="button" class="btn btn-outline-primary">
+                {% comment "todo" %}{% url 'blog:create_post' %}{% endcomment %}
+                <a class="text-decoration-none text-reset" href="/">
+                  Написать пост
+                </a>
+              </button>
+              <button type="button" class="btn btn-outline-primary">
+                {% comment "todo" %}{% url 'blog:profile' user.username %}{% endcomment %}
+                <a class="text-decoration-none text-reset" href="/">
+                  {% comment "todo" %}{{ user.username }}{% endcomment %}
+                  user.username
+                </a>
+              </button>
+              <button type="button" class="btn btn-outline-primary">
+                <a class="text-decoration-none text-reset" href="{% url 'logout' %}">
+                  Выйти
+                </a>
+              </button>
             </div>
           {% else %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
               <button type="button" class="btn btn-outline-primary">
-                {% comment "todo: configure login a tag after settings url" %}{% url 'login' %}{% endcomment %}
-                <a class="text-decoration-none text-reset" href="/">Войти</a>
+                <a class="text-decoration-none text-reset" href="{% url 'login' %}">Войти</a>
               </button>
               <button type="button" class="btn btn-outline-primary">
                 {% comment "todo: configure registration a tag after settings url" %}{% url 'registration' %}{% endcomment %}
