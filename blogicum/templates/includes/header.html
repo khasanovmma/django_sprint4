@@ -45,8 +45,7 @@
                 <a class="text-decoration-none text-reset" href="{% url 'login' %}">Войти</a>
               </button>
               <button type="button" class="btn btn-outline-primary">
-                {% comment "todo: configure registration a tag after settings url" %}{% url 'registration' %}{% endcomment %}
-                <a class="text-decoration-none text-reset" href="/">Регистрация</a>
+                <a class="text-decoration-none text-reset" href="{% url 'registration' %}">Регистрация</a>
               </button>
             </div>
           {% endif %}
