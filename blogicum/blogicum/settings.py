@@ -4,7 +4,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-v^d*)_6cmc6v5m+qwj21ut((1f=vc#lcif8a=e^8e&$_=c!h43"
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -88,3 +88,5 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = ["static_dev/"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CSRF_FAILURE_VIEW = "core.views.csrf_failure"
