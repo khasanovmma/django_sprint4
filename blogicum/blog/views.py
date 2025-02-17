@@ -22,10 +22,11 @@ def index(request):
         HttpResponse.
     """
     template = "blog/index.html"
+    paginator = Paginator(get_active_post_queryset(), POSTS_LIMIT)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(
-        request=request,
-        template_name=template,
-        context={"post_list": get_active_post_queryset()[:POSTS_LIMIT]},
+        request=request, template_name=template, context={"page_obj": page_obj}
     )
 
 
@@ -83,11 +84,21 @@ def category(request, category_slug):
     )
 
 
-def profile(request, username):
+def detail_profile(request, username: str):
+    """
+    Отображает страницу профиля пользователя с его постами.
+
+    Аргументы:
+        request: HTTP-запрос.
+        username: (str) Имя пользователя, чей профиль нужно отобразить.
+
+    Возвращает:
+        HttpResponse: Страница профиля пользователя с пагинацией постов.
+    """
     user = get_object_or_404(User, username=username)
     posts = user.posts.all()
     paginator = Paginator(posts, POSTS_LIMIT)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    context = {"profile": user, "post_list": page_obj}
+    context = {"profile": user, "page_obj": page_obj}
     return render(request, "blog/profile.html", context=context)
