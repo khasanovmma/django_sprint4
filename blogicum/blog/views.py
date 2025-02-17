@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404, render
+from django.core.paginator import Paginator
 
 from blog.constants import POSTS_LIMIT
-from .models import Category
+from .models import Category, User
 from .selectors import get_active_post_queryset
 
 
@@ -80,3 +81,13 @@ def category(request, category_slug):
         template_name=template,
         context={"category": category_obj, "post_list": post_list},
     )
+
+
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    posts = user.posts.all()
+    paginator = Paginator(posts, POSTS_LIMIT)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context = {"profile": user, "post_list": page_obj}
+    return render(request, "blog/profile.html", context=context)

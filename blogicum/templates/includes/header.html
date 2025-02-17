@@ -27,10 +27,8 @@
                 </a>
               </button>
               <button type="button" class="btn btn-outline-primary">
-                {% comment "todo" %}{% url 'blog:profile' user.username %}{% endcomment %}
-                <a class="text-decoration-none text-reset" href="/">
-                  {% comment "todo" %}{{ user.username }}{% endcomment %}
-                  user.username
+                <a class="text-decoration-none text-reset" href="{% url 'blog:profile' user.username %}">
+                  {{ user.username }}
                 </a>
               </button>
               <button type="button" class="btn btn-outline-primary">
