@@ -90,3 +90,7 @@ STATICFILES_DIRS = ["static_dev/"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CSRF_FAILURE_VIEW = "core.views.csrf_failure"
+
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+
+EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
