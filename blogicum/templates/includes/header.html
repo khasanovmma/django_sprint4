@@ -29,10 +29,14 @@
             </div>
           {% else %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'login' %}">Войти</a></button>
-              <button type="button" class="btn btn-outline-primary"><a class="text-decoration-none text-reset"
-                  href="{% url 'registration' %}">Регистрация</a></button>
+              <button type="button" class="btn btn-outline-primary">
+                {% comment "todo: configure login a tag after settings url" %}{% url 'login' %}{% endcomment %}
+                <a class="text-decoration-none text-reset" href="/">Войти</a>
+              </button>
+              <button type="button" class="btn btn-outline-primary">
+                {% comment "todo: configure registration a tag after settings url" %}{% url 'registration' %}{% endcomment %}
+                <a class="text-decoration-none text-reset" href="/">Регистрация</a>
+              </button>
             </div>
           {% endif %}
         </ul>
