@@ -163,6 +163,20 @@ def create_post(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def edit_post(request: HttpRequest, post_id: int) -> HttpResponse:
+    """
+    Обрабатывает редактирование существующего поста.
+
+    Требует аутентификации. Получает пост по его ID. Если текущий пользователь
+    не является автором поста, возвращает ошибку 403. При валидной форме
+    сохраняет изменения и перенаправляет пользователя на страницу профиля.
+
+    Args:
+        request (HttpRequest): Запрос от пользователя.
+        post_id (int): Идентификатор редактируемого поста.
+
+    Returns:
+        HttpResponse: Страница редактирования поста или редирект на профиль.
+    """
     post = get_object_or_404(Post, id=post_id)
 
     if request.user != post.author:
@@ -175,3 +189,28 @@ def edit_post(request: HttpRequest, post_id: int) -> HttpResponse:
         form.save()
         return redirect("blog:profile", username=request.user.username)
     return render(request, "blog/create.html", context={"form": form})
+
+
+@login_required
+def delete_post(request: HttpRequest, post_id: int) -> HttpResponse:
+    """
+    Удаляет пост, если текущий пользователь является его автором.
+
+    Требует аутентификации. Получает пост по его ID. Если пользователь
+    не является автором, возвращает ошибку 403. При успешном удалении
+    перенаправляет на страницу профиля.
+
+    Args:
+        request (HttpRequest): Запрос от пользователя.
+        post_id (int): Идентификатор удаляемого поста.
+
+    Returns:
+        HttpResponse: Редирект на страницу профиля пользователя.
+    """
+    post = get_object_or_404(Post, id=post_id)
+    if request.user != post.author:
+        raise HttpResponseForbidden(
+            content="У вас нет прав для выполнения этого действия"
+        )
+    post.delete()
+    return redirect("blog:profile", username=request.user.username)
