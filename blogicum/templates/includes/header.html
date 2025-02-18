@@ -21,8 +21,7 @@
           {% if user.is_authenticated %}
             <div class="btn-group" role="group" aria-label="Basic outlined example">
               <button type="button" class="btn btn-outline-primary">
-                {% comment "todo" %}{% url 'blog:create_post' %}{% endcomment %}
-                <a class="text-decoration-none text-reset" href="/">
+                <a class="text-decoration-none text-reset" href="{% url 'blog:create_post' %}">
                   Написать пост
                 </a>
               </button>

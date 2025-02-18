@@ -4,8 +4,8 @@ from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
 
 from blog.constants import POSTS_LIMIT
-from .forms import EditProfileForm
-from .models import Category, User
+from .forms import EditProfileForm, PostForm
+from .models import Category, Post, User
 from .selectors import get_active_post_queryset
 
 
@@ -118,15 +118,16 @@ def edit_profile(request: HttpRequest) -> HttpResponse:
     Обрабатывает редактирование профиля пользователя.
 
     Требует аутентификации. Загружает данные текущего пользователя,
-    передает их в форму редактирования и сохраняет изменения, если форма валидна.
-    После успешного сохранения происходит редирект на страницу профиля.
+    передает их в форму редактирования и сохраняет изменения,если форма
+    валидна.После успешного сохранения происходит xредирект на страницу
+    профиля.
 
     Args:
         request (HttpRequest): Запрос от пользователя.
 
     Returns:
         HttpResponse: Страница редактирования профиля с формой или
-                      редирект на профиль пользователя после успешного обновления.
+        редирект на профиль пользователя после успешного обновления.
     """
     user = get_object_or_404(User, username=request.user.username)
     form = EditProfileForm(request.POST or None, instance=user)
@@ -137,3 +138,30 @@ def edit_profile(request: HttpRequest) -> HttpResponse:
             username=user.username,
         )
     return render(request, "blog/user.html", context={"form": form})
+
+
+@login_required
+def create_post(request: HttpRequest) -> HttpResponse:
+    """
+    Обрабатывает создание нового поста.
+
+    Требует аутентификации. Создаёт форму для ввода данных поста.
+    Если форма валидна, создаёт объект, назначает автора и сохраняет.
+    После успешного сохранения выполняется редирект на профиль.
+
+    Args:
+        request (HttpRequest): Запрос от пользователя.
+
+    Returns:
+        HttpResponse: Страница с формой или редирект на профиль.
+    """
+    form = PostForm(request.POST or None, request.FILES or None)
+    if form.is_valid():
+        post: Post = form.save(commit=False)
+        post.author = request.user
+        post.save()
+        return redirect(
+            "blog:profile",
+            username=request.user.username,
+        )
+    return render(request, "blog/create.html", context={"form": form})
