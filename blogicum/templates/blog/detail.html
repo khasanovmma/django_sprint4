@@ -31,12 +31,13 @@
             <a class="btn btn-sm text-muted" href="{% url 'blog:edit_post' post.id %}" role="button">
               Отредактировать публикацию
             </a>
-            <a class="btn btn-sm text-muted" href="{% url 'blog:delete_post' post.id %}" role="button">
+            {% comment "todo" %}{% url 'blog:delete_post' post.id %}{% endcomment %}
+            <a class="btn btn-sm text-muted" href="" role="button">
               Удалить публикацию
             </a>
           </div>
         {% endif %}
-        {% include "includes/comments.html" %}
+        {% comment %} {% include "includes/comments.html" %} {% endcomment %}
       </div>
     </div>
   </div>

@@ -1,12 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.paginator import Paginator
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 
 from blog.constants import POSTS_LIMIT
-from .forms import EditProfileForm, PostForm
-from .models import Category, Post, User
-from .selectors import get_active_post_queryset
+from blog.forms import EditProfileForm, PostForm
+from blog.models import Category, Post, User
+from blog.selectors import get_active_post_queryset
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -133,10 +133,7 @@ def edit_profile(request: HttpRequest) -> HttpResponse:
     form = EditProfileForm(request.POST or None, instance=user)
     if form.is_valid():
         form.save()
-        return redirect(
-            "blog:profile",
-            username=user.username,
-        )
+        return redirect("blog:profile", username=user.username)
     return render(request, "blog/user.html", context={"form": form})
 
 
@@ -160,8 +157,21 @@ def create_post(request: HttpRequest) -> HttpResponse:
         post: Post = form.save(commit=False)
         post.author = request.user
         post.save()
-        return redirect(
-            "blog:profile",
-            username=request.user.username,
+        return redirect("blog:profile", username=request.user.username)
+    return render(request, "blog/create.html", context={"form": form})
+
+
+@login_required
+def edit_post(request: HttpRequest, post_id: int) -> HttpResponse:
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.user != post.author:
+        raise HttpResponseForbidden(
+            content="У вас нет прав для выполнения этого действия"
         )
+
+    form = PostForm(request.POST or None, request.FILES or None, instance=post)
+    if form.is_valid():
+        form.save()
+        return redirect("blog:profile", username=request.user.username)
     return render(request, "blog/create.html", context={"form": form})

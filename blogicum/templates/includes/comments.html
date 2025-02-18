@@ -1,7 +1,8 @@
 {% if user.is_authenticated %}
   {% load django_bootstrap5 %}
   <h5 class="mb-4">Оставить комментарий</h5>
-  <form method="post" action="{% url 'blog:add_comment' post.id %}">
+  {% comment "todo" %}{% url 'blog:add_comment' post.id %}{% endcomment %}
+  <form method="post" action="">
     {% csrf_token %}
     {% bootstrap_form form %}
     {% bootstrap_button button_type="submit" content="Отправить" %}
