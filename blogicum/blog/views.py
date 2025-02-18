@@ -1,12 +1,15 @@
-from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render, redirect
 from django.core.paginator import Paginator
+from django.http import HttpRequest, HttpResponse
 
 from blog.constants import POSTS_LIMIT
+from .forms import EditProfileForm
 from .models import Category, User
 from .selectors import get_active_post_queryset
 
 
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     """
     Главная страница блога.
 
@@ -30,7 +33,7 @@ def index(request):
     )
 
 
-def post_detail(request, post_id):
+def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     """
     Детальная страница публикации.
 
@@ -54,7 +57,7 @@ def post_detail(request, post_id):
     )
 
 
-def category(request, category_slug):
+def category(request: HttpRequest, category_slug: str) -> HttpResponse:
     """
     Страница категории блога.
 
@@ -84,9 +87,12 @@ def category(request, category_slug):
     )
 
 
-def detail_profile(request, username: str):
+@login_required
+def detail_profile(request: HttpRequest, username: str) -> HttpResponse:
     """
     Отображает страницу профиля пользователя с его постами.
+
+    Требует аутентификации.
 
     Аргументы:
         request: HTTP-запрос.
@@ -102,3 +108,30 @@ def detail_profile(request, username: str):
     page_obj = paginator.get_page(page_number)
     context = {"profile": user, "page_obj": page_obj}
     return render(request, "blog/profile.html", context=context)
+
+
+@login_required
+def edit_profile(request: HttpRequest) -> HttpResponse:
+    """
+    Обрабатывает редактирование профиля пользователя.
+
+    Требует аутентификации. Загружает данные текущего пользователя,
+    передает их в форму редактирования и сохраняет изменения, если форма валидна.
+    После успешного сохранения происходит редирект на страницу профиля.
+
+    Args:
+        request (HttpRequest): Запрос от пользователя.
+
+    Returns:
+        HttpResponse: Страница редактирования профиля с формой или
+                      редирект на профиль пользователя после успешного обновления.
+    """
+    user = get_object_or_404(User, username=request.user.username)
+    form = EditProfileForm(request.POST or None, instance=user)
+    if form.is_valid():
+        form.save()
+        return redirect(
+            "blog:profile",
+            username=user.username,
+        )
+    return render(request, "blog/user.html", context={"form": form})
