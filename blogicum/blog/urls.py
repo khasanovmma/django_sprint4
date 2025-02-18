@@ -14,5 +14,5 @@ urlpatterns = [
     ),
     path("edit-profile/", views.edit_profile, name="edit_profile"),
     path("profile/<str:username>/", views.detail_profile, name="profile"),
-    path("create-post/", views.create_post, name="create_post"),
+    path("posts/create/", views.create_post, name="create_post"),
 ]
