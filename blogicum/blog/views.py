@@ -61,9 +61,9 @@ def category(request: HttpRequest, category_slug: str) -> HttpResponse:
     """
     Страница категории блога.
 
-    Отображает список публикаций, относящихся к конкретной категории,
-    которая опубликована, а также имеет дату публикации в прошлом или
-    настоящем.
+    Отображает список публикаций (максимум POSTS_LIMIT), относящихся к
+    конкретной категории, которая опубликована, а также имеет дату
+    публикации в прошлом илинастоящем.
 
     Аргументы:
         request: HttpRequest.
@@ -79,11 +79,13 @@ def category(request: HttpRequest, category_slug: str) -> HttpResponse:
         is_published=True,
     )
     post_list = get_active_post_queryset().filter(category=category_obj)
-
+    paginator = Paginator(post_list, POSTS_LIMIT)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(
         request=request,
         template_name=template,
-        context={"category": category_obj, "post_list": post_list},
+        context={"category": category_obj, "page_obj": page_obj},
     )
 
 
