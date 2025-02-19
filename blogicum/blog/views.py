@@ -4,8 +4,8 @@ from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 
 from blog.constants import POSTS_LIMIT
-from blog.forms import EditProfileForm, PostForm
-from blog.models import Category, Post, User
+from blog.forms import CommentForm, EditProfileForm, PostForm
+from blog.models import Category, Comment, Post, User
 from blog.selectors import get_active_post_queryset
 
 
@@ -49,11 +49,12 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
         HTTP-ответ с деталями публикации.
     """
     post = get_object_or_404(get_active_post_queryset(), pk=post_id)
+    form = CommentForm()
     template = "blog/detail.html"
     return render(
         request=request,
         template_name=template,
-        context={"post": post},
+        context={"post": post, "form": form, "comments": post.comments.all()},
     )
 
 
@@ -214,3 +215,32 @@ def delete_post(request: HttpRequest, post_id: int) -> HttpResponse:
         )
     post.delete()
     return redirect("blog:profile", username=request.user.username)
+
+
+@login_required
+def add_comment(request: HttpRequest, post_id: int) -> HttpResponse:
+    """
+    Обрабатывает добавление комментария к посту.
+
+    Только авторизованные пользователи могут оставлять комментарии.
+    Функция получает объект поста по переданному `post_id` и проверяет данные
+    формы.Если форма валидна, создаётся комментарий, привязанный к посту и
+    пользователю.После сохранения комментария происходит редирект на страницу
+    поста.
+
+    Args:
+        request (HttpRequest): Запрос от пользователя.
+        post_id (int): Идентификатор поста, к которому добавляется комментарий.
+
+    Returns:
+        HttpResponse: Редирект на страницу деталей поста.
+    """
+    post = get_object_or_404(Post, id=post_id)
+    form = CommentForm(request.POST or None)
+
+    if form.is_valid():
+        comment: Comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect("blog:post_detail", post_id)

@@ -1,8 +1,7 @@
 {% if user.is_authenticated %}
   {% load django_bootstrap5 %}
   <h5 class="mb-4">Оставить комментарий</h5>
-  {% comment "todo" %}{% url 'blog:add_comment' post.id %}{% endcomment %}
-  <form method="post" action="">
+  <form method="post" action="{% url 'blog:add_comment' post.id %}">
     {% csrf_token %}
     {% bootstrap_form form %}
     {% bootstrap_button button_type="submit" content="Отправить" %}
@@ -22,10 +21,12 @@
       {{ comment.text|linebreaksbr }}
     </div>
     {% if user == comment.author %}
-      <a class="btn btn-sm text-muted" href="{% url 'blog:edit_comment' post.id comment.id %}" role="button">
+    {% comment "todo" %}{% url 'blog:edit_comment' post.id comment.id %}{% endcomment %}
+      <a class="btn btn-sm text-muted" href="/" role="button">
         Отредактировать комментарий
       </a>
-      <a class="btn btn-sm text-muted" href="{% url 'blog:delete_comment' post.id comment.id %}" role="button">
+      {% comment "todo" %}{% url 'blog:delete_comment' post.id comment.id %}{% endcomment %}
+      <a class="btn btn-sm text-muted" href="/" role="button">
         Удалить комментарий
       </a>
     {% endif %}
