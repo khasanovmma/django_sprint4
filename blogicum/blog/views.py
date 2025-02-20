@@ -51,7 +51,6 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     Возвращает:
         HTTP-ответ с деталями публикации.
     """
-
     author = request.user if request.user.is_authenticated else None
 
     post = get_object_or_404(
@@ -307,6 +306,22 @@ def delete_comment(
     post_id: int,
     comment_id: int,
 ) -> HttpResponse:
+    """
+    Удаление комментария.
+
+    Позволяет автору комментария удалить его. Если текущий пользователь
+    не является автором, возвращается ошибка 403 (доступ запрещён).
+    При успешном удалении происходит редирект на страницу поста.
+
+    Аргументы:
+        request (HttpRequest): Запрос пользователя.
+        post_id (int): ID поста, к которому относится комментарий.
+        comment_id (int): ID комментария, который нужно удалить.
+
+    Возвращает:
+        HttpResponse: Редирект на страницу поста при успешном удалении
+                      или страницу комментария при GET-запросе.
+    """
     comment = get_object_or_404(Comment, id=comment_id, post_id=post_id)
     if request.user != comment.author:
         return HttpResponseForbidden(
