@@ -4,12 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.paginator import Paginator
-from django.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseForbidden,
-    HttpResponseNotFound,
-)
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 
 from blog.constants import POSTS_LIMIT
 from blog.forms import CommentForm, EditProfileForm, PostForm
