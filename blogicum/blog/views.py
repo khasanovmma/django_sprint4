@@ -181,7 +181,7 @@ def edit_post(request: HttpRequest, post_id: int) -> HttpResponse:
     post = get_object_or_404(Post, id=post_id)
 
     if request.user != post.author:
-        raise HttpResponseForbidden(
+        return HttpResponseForbidden(
             content="У вас нет прав для выполнения этого действия"
         )
 
@@ -210,7 +210,7 @@ def delete_post(request: HttpRequest, post_id: int) -> HttpResponse:
     """
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
-        raise HttpResponseForbidden(
+        return HttpResponseForbidden(
             content="У вас нет прав для выполнения этого действия"
         )
     post.delete()
@@ -276,7 +276,7 @@ def edit_comment(
         return redirect("blog:post_detail", post.id)
 
     if comment.post != post:
-        raise HttpResponseForbidden(
+        return HttpResponseForbidden(
             content="У вас нет прав для выполнения этого действия"
         )
 
@@ -299,7 +299,7 @@ def delete_comment(
         return redirect("blog:post_detail", post.id)
     if request.POST:
         if comment.post != post:
-            raise HttpResponseForbidden(
+            return HttpResponseForbidden(
                 content="У вас нет прав для выполнения этого действия"
             )
         comment.delete()
