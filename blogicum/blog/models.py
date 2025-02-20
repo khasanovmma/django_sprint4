@@ -88,6 +88,10 @@ class Post(PublishedCreatedAtModel):
     def __str__(self):
         return self.title
 
+    @property
+    def comment_count(self) -> int:
+        return self.comments.count()
+
 
 class Comment(PublishedCreatedAtModel):
     text = models.TextField(verbose_name="Текст")
