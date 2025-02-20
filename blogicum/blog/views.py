@@ -1,3 +1,6 @@
+from django.db.models import Q
+from django.urls import reverse_lazy
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.paginator import Paginator
@@ -48,7 +51,20 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     Возвращает:
         HTTP-ответ с деталями публикации.
     """
-    post = get_object_or_404(get_active_post_queryset(), pk=post_id)
+
+    author = request.user if request.user.is_authenticated else None
+
+    post = get_object_or_404(
+        Post,
+        Q(
+            pub_date__lte=timezone.now(),
+            is_published=True,
+            category__is_published=True,
+        )
+        | Q(author=author),
+        pk=post_id,
+    )
+
     form = CommentForm()
     template = "blog/detail.html"
     return render(
@@ -105,7 +121,7 @@ def detail_profile(request: HttpRequest, username: str) -> HttpResponse:
         HttpResponse: Страница профиля пользователя с пагинацией постов.
     """
     user = get_object_or_404(User, username=username)
-    posts = user.posts.all()
+    posts = Post.objects.filter(author=user)
     paginator = Paginator(posts, POSTS_LIMIT)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -181,9 +197,7 @@ def edit_post(request: HttpRequest, post_id: int) -> HttpResponse:
     post = get_object_or_404(Post, id=post_id)
 
     if request.user != post.author:
-        return HttpResponseForbidden(
-            content="У вас нет прав для выполнения этого действия"
-        )
+        return redirect("blog:post_detail", post_id=post_id)
 
     form = PostForm(request.POST or None, request.FILES or None, instance=post)
     if form.is_valid():
@@ -293,15 +307,20 @@ def delete_comment(
     post_id: int,
     comment_id: int,
 ) -> HttpResponse:
-    post = get_object_or_404(Post, id=post_id)
-    comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(Comment, id=comment_id, post_id=post_id)
     if request.user != comment.author:
-        return redirect("blog:post_detail", post.id)
-    if request.POST:
-        if comment.post != post:
-            return HttpResponseForbidden(
-                content="У вас нет прав для выполнения этого действия"
-            )
+        return HttpResponseForbidden(
+            content="У вас нет прав для выполнения этого действия"
+        )
+    if request.method == "POST":
         comment.delete()
-        return redirect("blog:post_detail", post_id)
+        return redirect(
+            reverse_lazy(
+                "blog:post_detail",
+                kwargs={
+                    "post_id": post_id,
+                },
+            )
+        )
+
     return render(request, "blog/comment.html", context={"comment": comment})
