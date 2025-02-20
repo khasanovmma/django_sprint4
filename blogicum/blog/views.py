@@ -275,8 +275,33 @@ def edit_comment(
     if request.user != comment.author:
         return redirect("blog:post_detail", post.id)
 
+    if comment.post != post:
+        raise HttpResponseForbidden(
+            content="У вас нет прав для выполнения этого действия"
+        )
+
     form = CommentForm(request.POST or None, instance=comment)
     if form.is_valid():
         form.save()
         return redirect("blog:post_detail", post.id)
     return render(request, "blog/create.html", context={"form": form})
+
+
+@login_required
+def delete_comment(
+    request: HttpRequest,
+    post_id: int,
+    comment_id: int,
+) -> HttpResponse:
+    post = get_object_or_404(Post, id=post_id)
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.user != comment.author:
+        return redirect("blog:post_detail", post.id)
+    if request.POST:
+        if comment.post != post:
+            raise HttpResponseForbidden(
+                content="У вас нет прав для выполнения этого действия"
+            )
+        comment.delete()
+        return redirect("blog:post_detail", post_id)
+    return render(request, "blog/comment.html", context={"comment": comment})
