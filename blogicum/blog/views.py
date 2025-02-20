@@ -4,7 +4,12 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.paginator import Paginator
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+)
 
 from blog.constants import POSTS_LIMIT
 from blog.forms import CommentForm, EditProfileForm, PostForm
@@ -105,7 +110,6 @@ def category(request: HttpRequest, category_slug: str) -> HttpResponse:
     )
 
 
-@login_required
 def detail_profile(request: HttpRequest, username: str) -> HttpResponse:
     """
     Отображает страницу профиля пользователя с его постами.
