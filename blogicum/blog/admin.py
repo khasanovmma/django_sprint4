@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.text import Truncator
 
 from .models import Category, Location, Post, Comment
 
@@ -9,6 +10,14 @@ class CommentInline(admin.StackedInline):
     model = Comment
     raw_id_fields = ("author",)
     extra = 0
+
+
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ("short_text", "post", "author", "created_at")
+    raw_id_fields = ("post", "author")
+
+    def short_text(self, comment: Comment):
+        return Truncator(comment.text).chars(50)
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -35,3 +44,4 @@ class LocationAdmin(admin.ModelAdmin):
 admin.site.register(Post, PostAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Location, LocationAdmin)
+admin.site.register(Comment, CommentAdmin)

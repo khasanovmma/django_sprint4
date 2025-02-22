@@ -93,7 +93,7 @@ class Post(PublishedCreatedAtModel):
         return self.comments.count()
 
 
-class Comment(PublishedCreatedAtModel):
+class Comment(models.Model):
     text = models.TextField(verbose_name="Текст")
     post = models.ForeignKey(
         Post,
@@ -106,6 +106,10 @@ class Comment(PublishedCreatedAtModel):
         on_delete=models.CASCADE,
         verbose_name="Автор",
         related_name="comments",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Добавлено",
     )
 
     class Meta:
