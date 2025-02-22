@@ -44,7 +44,7 @@ def get_post_queryset(
 
 def paginate_queryset(
     queryset: QuerySet, request: HttpRequest, posts_limit: int = POSTS_LIMIT
-):
+) -> QuerySet:
     """
     Функция для пагинации списка записей.
 

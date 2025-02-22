@@ -1,9 +1,13 @@
-from django.db.models import Q
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseForbidden,
+    Http404,
+)
 
 from blog.forms import CommentForm, EditProfileForm, PostForm
 from blog.models import Category, Comment, Post, User
@@ -50,25 +54,28 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     Возвращает:
         HTTP-ответ с деталями публикации.
     """
-    author = request.user if request.user.is_authenticated else None
-
     post = get_object_or_404(
-        Post,
-        Q(
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            category__is_published=True,
-        )
-        | Q(author=author),
+        get_post_queryset(),
         pk=post_id,
     )
+
+    if post.author != request.user and (
+        not post.is_published
+        or not post.category.is_published
+        or post.pub_date > timezone.now()
+    ):
+        raise Http404("Публикация недоступна.")
 
     form = CommentForm()
     template = "blog/detail.html"
     return render(
         request=request,
         template_name=template,
-        context={"post": post, "form": form, "comments": post.comments.all()},
+        context={
+            "post": post,
+            "form": form,
+            "comments": post.comments.all().select_related("author"),
+        },
     )
 
 
