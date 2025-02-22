@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import (
     HttpRequest,
     HttpResponse,
-    HttpResponseForbidden,
     Http404,
 )
 
@@ -223,22 +222,20 @@ def delete_post(request: HttpRequest, post_id: int) -> HttpResponse:
     """
     Удаляет пост, если текущий пользователь является его автором.
 
-    Требует аутентификации. Получает пост по его ID. Если пользователь
-    не является автором, возвращает ошибку 403. При успешном удалении
-    перенаправляет на страницу профиля.
+    Для выполнения операции требуется аутентификация. Если пользователь не
+    является автором поста, выполняется редирект на страницу его профиля.
+    При успешном удалении также происходит редирект на страницу профиля.
 
-    Args:
-        request (HttpRequest): Запрос от пользователя.
+    Аргументы:
+        request (HttpRequest): Входящий HTTP-запрос.
         post_id (int): Идентификатор удаляемого поста.
 
-    Returns:
+    Возвращает:
         HttpResponse: Редирект на страницу профиля пользователя.
     """
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
-        return HttpResponseForbidden(
-            content="У вас нет прав для выполнения этого действия"
-        )
+        return redirect("blog:profile", username=request.user.username)
     post.delete()
     return redirect("blog:profile", username=request.user.username)
 
@@ -296,20 +293,14 @@ def edit_comment(
         HttpResponse: Страница с формой редактирования комментария или
                       перенаправление на страницу поста.
     """
-    post = get_object_or_404(Post, id=post_id)
-    comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(Comment, id=comment_id, post_id=post_id)
     if request.user != comment.author:
-        return redirect("blog:post_detail", post.id)
-
-    if comment.post != post:
-        return HttpResponseForbidden(
-            content="У вас нет прав для выполнения этого действия"
-        )
+        return redirect("blog:post_detail", post_id)
 
     form = CommentForm(request.POST or None, instance=comment)
     if form.is_valid():
         form.save()
-        return redirect("blog:post_detail", post.id)
+        return redirect("blog:post_detail", post_id)
     return render(request, "blog/create.html", context={"form": form})
 
 
@@ -320,26 +311,26 @@ def delete_comment(
     comment_id: int,
 ) -> HttpResponse:
     """
-    Удаление комментария.
+    Удаляет комментарий, если текущий пользователь является его автором.
 
-    Позволяет автору комментария удалить его. Если текущий пользователь
-    не является автором, возвращается ошибка 403 (доступ запрещён).
-    При успешном удалении происходит редирект на страницу поста.
+    Если пользователь не является автором комментария, выполняется редирект на
+    страницу поста. В случае успешного удаления также происходит редирект на
+    страницу поста.При GET-запросе отображается страница с подтверждением
+    удаления комментария.
 
     Аргументы:
-        request (HttpRequest): Запрос пользователя.
-        post_id (int): ID поста, к которому относится комментарий.
-        comment_id (int): ID комментария, который нужно удалить.
+        request (HttpRequest): HTTP-запрос пользователя.
+        post_id (int): Идентификатор поста, к которому относится комментарий.
+        comment_id (int): Идентификатор удаляемого комментария.
 
     Возвращает:
-        HttpResponse: Редирект на страницу поста при успешном удалении
-                      или страницу комментария при GET-запросе.
+        HttpResponse: Редирект на страницу поста после удаления или
+        отображение страницы подтверждения удаления при GET-запросе.
     """
     comment = get_object_or_404(Comment, id=comment_id, post_id=post_id)
     if request.user != comment.author:
-        return HttpResponseForbidden(
-            content="У вас нет прав для выполнения этого действия"
-        )
+        return redirect("blog:post_detail", post_id)
+
     if request.method == "POST":
         comment.delete()
         return redirect(
