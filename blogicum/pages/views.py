@@ -6,7 +6,6 @@ def server_error(request):
 
 
 def page_not_found(request, exception):
-    print("asdasdasd")
     return render(request, "pages/404.html", status=404)
 
 
