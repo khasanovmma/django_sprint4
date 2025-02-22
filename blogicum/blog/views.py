@@ -128,8 +128,16 @@ def detail_profile(request: HttpRequest, username: str) -> HttpResponse:
         HttpResponse: Страница профиля пользователя с пагинацией постов.
     """
     user = get_object_or_404(User, username=username)
-    post_queryset = get_post_queryset(add_annotations=True).filter(author=user)
-    page_obj = paginate_queryset(queryset=post_queryset, request=request)
+    if request.user == user:
+        post_queryset = get_post_queryset(add_annotations=True)
+    else:
+        post_queryset = get_post_queryset(
+            use_filters=True,
+            add_annotations=True,
+        )
+    page_obj = paginate_queryset(
+        queryset=post_queryset.filter(author=user), request=request
+    )
     context = {"profile": user, "page_obj": page_obj}
     return render(request, "blog/profile.html", context=context)
 
