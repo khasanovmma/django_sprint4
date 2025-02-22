@@ -159,11 +159,10 @@ def edit_profile(request: HttpRequest) -> HttpResponse:
         HttpResponse: Страница редактирования профиля с формой или
         редирект на профиль пользователя после успешного обновления.
     """
-    user = get_object_or_404(User, username=request.user.username)
-    form = EditProfileForm(request.POST or None, instance=user)
+    form = EditProfileForm(request.POST or None, instance=request.user)
     if form.is_valid():
         form.save()
-        return redirect("blog:profile", username=user.username)
+        return redirect("blog:profile", username=request.user.username)
     return render(request, "blog/user.html", context={"form": form})
 
 
