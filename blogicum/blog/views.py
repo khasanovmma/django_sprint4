@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from blog.constants import POSTS_LIMIT
 from blog.forms import CommentForm, EditProfileForm, PostForm
 from blog.models import Category, Comment, Post, User
-from blog.selectors import get_active_post_queryset
+from blog.selectors import get_post_queryset, paginate_queryset
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -28,9 +28,10 @@ def index(request: HttpRequest) -> HttpResponse:
         HttpResponse.
     """
     template = "blog/index.html"
-    paginator = Paginator(get_active_post_queryset(), POSTS_LIMIT)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate_queryset(
+        queryset=get_post_queryset(use_filters=True, add_annotations=True),
+        request=request,
+    )
     return render(
         request=request, template_name=template, context={"page_obj": page_obj}
     )
@@ -89,19 +90,22 @@ def category(request: HttpRequest, category_slug: str) -> HttpResponse:
         HttpResponse.
     """
     template = "blog/category.html"
-    category_obj = get_object_or_404(
+    category = get_object_or_404(
         Category,
         slug=category_slug,
         is_published=True,
     )
-    post_list = get_active_post_queryset().filter(category=category_obj)
-    paginator = Paginator(post_list, POSTS_LIMIT)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate_queryset(
+        queryset=get_post_queryset(
+            use_filters=True,
+            add_annotations=True,
+        ).filter(category=category),
+        request=request,
+    )
     return render(
         request=request,
         template_name=template,
-        context={"category": category_obj, "page_obj": page_obj},
+        context={"category": category, "page_obj": page_obj},
     )
 
 
@@ -119,10 +123,8 @@ def detail_profile(request: HttpRequest, username: str) -> HttpResponse:
         HttpResponse: Страница профиля пользователя с пагинацией постов.
     """
     user = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=user)
-    paginator = Paginator(posts, POSTS_LIMIT)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    post_queryset = get_post_queryset(add_annotations=True).filter(author=user)
+    page_obj = paginate_queryset(queryset=post_queryset, request=request)
     context = {"profile": user, "page_obj": page_obj}
     return render(request, "blog/profile.html", context=context)
 
