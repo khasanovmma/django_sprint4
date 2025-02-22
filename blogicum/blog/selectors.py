@@ -7,15 +7,6 @@ from blog.models import Post
 from blog.constants import POSTS_LIMIT
 
 
-def get_active_post_queryset():
-    """Возвращает базовый QuerySet для публикации."""
-    return Post.objects.filter(
-        is_published=True,
-        pub_date__lte=timezone.now(),
-        category__is_published=True,
-    ).select_related("author", "location", "category")
-
-
 def get_post_queryset(
     use_filters=False,
     add_annotations=False,
